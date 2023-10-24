@@ -1,37 +1,36 @@
 package com.golballogic.usersdemo.domain;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.time.Instant;
-import java.util.List;
+import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
 @Table(name = "app_user")
+@EntityListeners(AuditingEntityListener.class)
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(columnDefinition = "uuid")
+    @GeneratedValue(generator = "uuid-hibernate-generator")
+    @GenericGenerator(name = "uuid-hibernate-generator", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID id;
     private String name;
+    @Column(unique = true)
     private String email;
     private String password;
-    @OneToMany(mappedBy = "user")
-    private List<Phone> phones;
-    private Instant lastLogin;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Phone> phones;
+    private Date lastLogin;
     private Boolean isActive;
     @CreatedDate
-    private Instant createdAt;
-    @LastModifiedDate
-    private Instant modifiedAt;
+    private Date createdAt;
 
     public UUID getId() {
         return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -58,43 +57,35 @@ public class User {
         this.password = password;
     }
 
-    public List<Phone> getPhones() {
-        return phones;
-    }
-
-    public void setPhones(List<Phone> phones) {
-        this.phones = phones;
-    }
-
-    public Boolean getActive() {
+    public Boolean getIsActive() {
         return isActive;
     }
 
-    public void setActive(Boolean active) {
+    public void setIsActive(Boolean active) {
         isActive = active;
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getLastLogin() {
+    public Date getLastLogin() {
         return lastLogin;
     }
 
-    public void setLastLogin(Instant lastLogin) {
+    public void setLastLogin(Date lastLogin) {
         this.lastLogin = lastLogin;
     }
 
-    public void setCreatedAt(Instant createdAt) {
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Instant getModifiedAt() {
-        return modifiedAt;
+    public Set<Phone> getPhones() {
+        return phones;
     }
 
-    public void setModifiedAt(Instant modifiedAt) {
-        this.modifiedAt = modifiedAt;
+    public void setPhones(Set<Phone> phones) {
+        this.phones = phones;
     }
 }

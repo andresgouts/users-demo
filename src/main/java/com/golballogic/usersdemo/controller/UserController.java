@@ -24,6 +24,6 @@ public class UserController {
 
     @GetMapping(value = "/login", produces = "application/json")
     public ResponseEntity<?> login(Principal principal) {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getUserByEmail(principal.getName()));
+        return ResponseEntity.status(HttpStatus.OK).body(userService.login(principal.getName()));
     }
 }

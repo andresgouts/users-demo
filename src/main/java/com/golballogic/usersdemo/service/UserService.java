@@ -1,10 +1,8 @@
 package com.golballogic.usersdemo.service;
 
-import com.golballogic.usersdemo.domain.Phone;
 import com.golballogic.usersdemo.domain.User;
 import com.golballogic.usersdemo.dto.UserDto;
 import com.golballogic.usersdemo.dto.request.CreateUserRequest;
-import com.golballogic.usersdemo.dto.PhoneDTO;
 import com.golballogic.usersdemo.dto.response.UserCreationResponse;
 import com.golballogic.usersdemo.exception.UserCreationException;
 import com.golballogic.usersdemo.repository.PhoneRepository;
@@ -16,10 +14,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.time.Instant;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -46,17 +44,18 @@ public class UserService {
 
         User user = modelMapper.map(userRequest, User.class);
         user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
-        user.setActive(true);
+        user.setIsActive(true);
         user.getPhones().forEach(phone -> {
             phone.setUser(user);
         });
+        user.setLastLogin(Date.from(Instant.now()));
 
         User savedUser = userRepository.save(user);
         phoneRepository.saveAll(user.getPhones());
 
         String token = TokenUtils.createToken(savedUser.getName(), savedUser.getEmail());
         UserCreationResponse response = modelMapper.map(savedUser, UserCreationResponse.class);
-        response.setToken(token);
+        response.setToken("Bearer " + token);
         return response;
 
     }
@@ -70,11 +69,18 @@ public class UserService {
         }
     }
 
-    public UserDto getUserByEmail(String email) {
+    public UserDto login(String email) {
         User user =  userRepository
                 .findOneUserByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return modelMapper.map(user, UserDto.class);
+
+        user.setLastLogin(Date.from(Instant.now()));
+
+        userRepository.save(user);
+
+        UserDto userDto = modelMapper.map(user, UserDto.class);
+        userDto.setToken("Bearer "  + TokenUtils.createToken(user.getName(), user.getEmail()));
+        return userDto;
     }
     
     private void validateEmail(String emailAddress) {

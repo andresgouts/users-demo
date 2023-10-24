@@ -2,13 +2,18 @@ package com.golballogic.usersdemo.service;
 
 import com.golballogic.usersdemo.domain.Phone;
 import com.golballogic.usersdemo.domain.User;
+import com.golballogic.usersdemo.dto.UserDto;
 import com.golballogic.usersdemo.dto.request.CreateUserRequest;
-import com.golballogic.usersdemo.dto.request.PhoneDTO;
+import com.golballogic.usersdemo.dto.PhoneDTO;
 import com.golballogic.usersdemo.dto.response.UserCreationResponse;
 import com.golballogic.usersdemo.exception.UserCreationException;
 import com.golballogic.usersdemo.repository.PhoneRepository;
 import com.golballogic.usersdemo.repository.UserRepository;
+import com.golballogic.usersdemo.security.TokenUtils;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,40 +27,54 @@ public class UserService {
     private static final String PASSWORD_REGEX = "^(?=(?:[^A-Z]*[A-Z]){1})(?=(?:[^0-9]*[0-9]){2})[A-Za-z0-9]{8,12}$";
     private final UserRepository userRepository;
     private final PhoneRepository phoneRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public UserService(UserRepository userRepository, PhoneRepository phoneRepository) {
+    public UserService(UserRepository userRepository,
+                       PhoneRepository phoneRepository,
+                       PasswordEncoder passwordEncoder,
+                       ModelMapper modelMapper) {
         this.userRepository = userRepository;
         this.phoneRepository = phoneRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.modelMapper = modelMapper;
     }
 
     public UserCreationResponse saveUser(CreateUserRequest userRequest) {
+        validateUserCreationData(userRequest);
+
+        User user = modelMapper.map(userRequest, User.class);
+        user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+        user.setActive(true);
+        user.getPhones().forEach(phone -> {
+            phone.setUser(user);
+        });
+
+        User savedUser = userRepository.save(user);
+        phoneRepository.saveAll(user.getPhones());
+
+        String token = TokenUtils.createToken(savedUser.getName(), savedUser.getEmail());
+        UserCreationResponse response = modelMapper.map(savedUser, UserCreationResponse.class);
+        response.setToken(token);
+        return response;
+
+    }
+
+    public void validateUserCreationData(CreateUserRequest userRequest) {
         validateEmail(userRequest.getEmail());
         validatePasswordFormat(userRequest.getPassword());
 
-        User savedUser = userRepository.save(userRequest.toUserEntity());
+        if (userRepository.findOneUserByEmail(userRequest.getEmail()).isPresent()) {
+            throw new UserCreationException("User Already exists");
+        }
+    }
 
-        List<Phone> phones = userRequest.getPhones().stream()
-                .map(PhoneDTO::toPhoneEntity)
-                .collect(Collectors.toList());
-
-        phones.forEach(phone -> {
-            phone.setUser(savedUser);
-        });
-
-        phoneRepository.saveAll(phones);
-
-        UserCreationResponse userResponse = new UserCreationResponse();
-        userResponse.setId(savedUser.getId());
-        userResponse.setName(savedUser.getName());
-        userResponse.setEmail(savedUser.getEmail());
-        userResponse.setToken(savedUser.getToken());
-        userResponse.setCreatedAt(savedUser.getCreatedAt());
-        userResponse.setIsActive(savedUser.getActive());
-        userResponse.setLastLogin(savedUser.getLastLogin());
-
-        return userResponse;
-
+    public UserDto getUserByEmail(String email) {
+        User user =  userRepository
+                .findOneUserByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return modelMapper.map(user, UserDto.class);
     }
     
     private void validateEmail(String emailAddress) {

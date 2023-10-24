@@ -1,6 +1,7 @@
 package com.golballogic.usersdemo.dto.request;
 
 import com.golballogic.usersdemo.domain.User;
+import com.golballogic.usersdemo.dto.PhoneDTO;
 import com.sun.istack.NotNull;
 import lombok.Data;
 
@@ -15,12 +16,4 @@ public class CreateUserRequest {
     private String password;
     private List<PhoneDTO> phones;
 
-    public User toUserEntity() {
-        User user = new User();
-        user.setActive(true);
-        user.setEmail(this.email);
-        user.setName(this.name);
-        user.setPassword(this.password);
-        return user;
-    }
 }

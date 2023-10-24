@@ -21,7 +21,6 @@ public class User {
     private List<Phone> phones;
     private Instant lastLogin;
     private Boolean isActive;
-    private String token;
     @CreatedDate
     private Instant createdAt;
     @LastModifiedDate
@@ -73,14 +72,6 @@ public class User {
 
     public void setActive(Boolean active) {
         isActive = active;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
     }
 
     public Instant getCreatedAt() {

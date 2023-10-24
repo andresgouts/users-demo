@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,13 +46,19 @@ public class UserService {
         User user = modelMapper.map(userRequest, User.class);
         user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
         user.setIsActive(true);
-        user.getPhones().forEach(phone -> {
-            phone.setUser(user);
-        });
+
+
         user.setLastLogin(Date.from(Instant.now()));
 
         User savedUser = userRepository.save(user);
-        phoneRepository.saveAll(user.getPhones());
+
+        if (user.getPhones() != null && !user.getPhones().isEmpty()) {
+            user.getPhones().forEach(phone -> {
+                phone.setUser(savedUser);
+            });
+            phoneRepository.saveAll(user.getPhones());
+        }
+
 
         String token = TokenUtils.createToken(savedUser.getName(), savedUser.getEmail());
         UserCreationResponse response = modelMapper.map(savedUser, UserCreationResponse.class);
@@ -91,8 +98,7 @@ public class UserService {
             throw new UserCreationException("Email address is invalid");
         };
     }
-    
-    //TODO need to fix regex to allow only one capital letter and 2 numbers
+
     private void validatePasswordFormat(String password) {
         Pattern pattern = Pattern.compile(PASSWORD_REGEX);
         Matcher matcher = pattern.matcher(password);

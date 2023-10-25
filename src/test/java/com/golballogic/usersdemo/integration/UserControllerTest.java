@@ -6,6 +6,7 @@ import com.golballogic.usersdemo.domain.User;
 import com.golballogic.usersdemo.dto.PhoneDTO;
 import com.golballogic.usersdemo.dto.request.CreateUserRequest;
 import com.golballogic.usersdemo.repository.UserRepository;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,11 +15,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -118,6 +122,41 @@ public class UserControllerTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(userRequest)))
                 .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    public void userLoginSuccess() throws Exception {
+
+        PhoneDTO phoneDto = PhoneDTO.builder()
+                .number(123L).build();
+        List<PhoneDTO> phones = new ArrayList<>();
+        phones.add(phoneDto);
+
+        CreateUserRequest userRequest = CreateUserRequest
+                .builder()
+                .email("test2@test.com")
+                .password("Password21")
+                .phones(phones)
+                .build();
+
+        MvcResult result = mockMvc.perform(post("/api/v1/users")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(userRequest)))
+                .andReturn();
+
+        String token =  JsonPath.read(result.getResponse().getContentAsString(), "$.token");
+
+        MvcResult loginResult = mockMvc.perform(get("/api/v1/users/login")
+                        .contentType("application/json").header("Authorization", token))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String email = JsonPath.read(loginResult.getResponse().getContentAsString(), "$.email");
+        assertEquals(email, userRequest.getEmail());
+
+
+
 
     }
 }

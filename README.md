@@ -46,5 +46,5 @@ This POST endpoint manage the user creation and the request body contract looks 
 ```
 
 ### /api/v1/users/login
-This GET endpoint reads the jwt token from Authorization header and returns the authenticated user info
+This GET endpoint reads the jwt token from Authorization header and returns the authenticated user info. You can get a token by creating a new user with Post `/api/v1/users`
 

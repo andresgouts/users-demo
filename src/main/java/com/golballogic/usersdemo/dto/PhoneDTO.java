@@ -1,9 +1,13 @@
 package com.golballogic.usersdemo.dto;
 
 import com.golballogic.usersdemo.domain.Phone;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class PhoneDTO {
     private Long number;
     private Integer cityCode;

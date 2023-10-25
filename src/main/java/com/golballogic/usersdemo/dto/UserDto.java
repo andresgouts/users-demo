@@ -1,12 +1,16 @@
 package com.golballogic.usersdemo.dto;
 
-import lombok.Data;
+import lombok.*;
 
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UserDto {
     private UUID id;
     private Date created;

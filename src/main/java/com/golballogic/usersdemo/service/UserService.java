@@ -15,7 +15,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,6 +23,7 @@ import java.util.regex.Pattern;
 public class UserService {
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
     private static final String PASSWORD_REGEX = "^(?=(?:[^A-Z]*[A-Z]){1})(?=(?:[^0-9]*[0-9]){2})[A-Za-z0-9]{8,12}$";
+
     private final UserRepository userRepository;
     private final PhoneRepository phoneRepository;
     private final PasswordEncoder passwordEncoder;

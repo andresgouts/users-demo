@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -48,12 +49,14 @@ public class UserServiceTest {
     public void saveUserSuccessTest() {
         PhoneDTO phoneDto = PhoneDTO.builder()
                 .number(123L).build();
+        List<PhoneDTO> phones = new ArrayList<>();
+        phones.add(phoneDto);
 
         CreateUserRequest userRequest = CreateUserRequest
                 .builder()
                 .email("test@test.com")
                 .password("Password21")
-                .phones(List.of(phoneDto))
+                .phones(phones)
                 .build();
         User user = modelMapper.map(userRequest, User.class);
         when(userRepository.save(any())).thenReturn(user);
@@ -66,14 +69,11 @@ public class UserServiceTest {
 
     @Test(expected = UserCreationException.class)
     public void saveUserBadEmailTest() {
-        PhoneDTO phoneDto = PhoneDTO.builder()
-                .number(123L).build();
 
         CreateUserRequest userRequest = CreateUserRequest
                 .builder()
                 .email("test.com")
                 .password("Password21")
-                .phones(List.of(phoneDto))
                 .build();
 
         userService.saveUser(userRequest);
@@ -81,14 +81,11 @@ public class UserServiceTest {
 
     @Test(expected = UserCreationException.class)
     public void saveUserBadPasswordTest() {
-        PhoneDTO phoneDto = PhoneDTO.builder()
-                .number(123L).build();
 
         CreateUserRequest userRequest = CreateUserRequest
                 .builder()
                 .email("test@test.com")
                 .password("password2")
-                .phones(List.of(phoneDto))
                 .build();
 
         userService.saveUser(userRequest);
@@ -96,14 +93,11 @@ public class UserServiceTest {
 
     @Test(expected = UserCreationException.class)
     public void saveUserAlreadyExists() {
-        PhoneDTO phoneDto = PhoneDTO.builder()
-                .number(123L).build();
 
         CreateUserRequest userRequest = CreateUserRequest
                 .builder()
                 .email("test@test.com")
                 .password("Password21")
-                .phones(List.of(phoneDto))
                 .build();
         User user = modelMapper.map(userRequest, User.class);
         when(userRepository.findOneUserByEmail(userRequest.getEmail())).thenReturn(Optional.of(user));
@@ -116,12 +110,15 @@ public class UserServiceTest {
     public void loginFindsUser() {
         PhoneDTO phoneDto = PhoneDTO.builder()
                 .number(123L).build();
+        List<PhoneDTO> phones = new ArrayList<>();
+        phones.add(phoneDto);
+
 
         UserDto userDto = UserDto
                 .builder()
                 .email("test@test.com")
                 .password("Password21")
-                .phones(List.of(phoneDto))
+                .phones(phones)
                 .created(Date.from(Instant.now()))
                 .name("name")
                 .lastLogin(Date.from(Instant.now()))
@@ -146,7 +143,6 @@ public class UserServiceTest {
                 .builder()
                 .email("test@test.com")
                 .password("Password21")
-                .phones(List.of(phoneDto))
                 .created(Date.from(Instant.now()))
                 .name("name")
                 .lastLogin(Date.from(Instant.now()))

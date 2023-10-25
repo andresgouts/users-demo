@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -45,12 +46,14 @@ public class UserControllerTest {
 
         PhoneDTO phoneDto = PhoneDTO.builder()
                 .number(123L).build();
+        List<PhoneDTO> phones = new ArrayList<>();
+        phones.add(phoneDto);
 
         CreateUserRequest userRequest = CreateUserRequest
                 .builder()
                 .email("test@test.com")
                 .password("Password21")
-                .phones(List.of(phoneDto))
+                .phones(phones)
                 .build();
 
         mockMvc.perform(post("/api/v1/users")

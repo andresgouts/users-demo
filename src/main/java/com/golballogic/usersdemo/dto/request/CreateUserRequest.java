@@ -1,6 +1,5 @@
 package com.golballogic.usersdemo.dto.request;
 
-import com.golballogic.usersdemo.domain.User;
 import com.golballogic.usersdemo.dto.PhoneDTO;
 import com.sun.istack.NotNull;
 import lombok.*;

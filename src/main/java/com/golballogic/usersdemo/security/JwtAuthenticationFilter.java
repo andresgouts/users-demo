@@ -1,6 +1,7 @@
 package com.golballogic.usersdemo.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.golballogic.usersdemo.exception.AuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -23,6 +24,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         try {
             authCredentials = new ObjectMapper().readValue(request.getReader(), AuthCredentials.class);
         } catch (IOException e) {
+            throw new AuthenticationException("An error occurs trying to get the user and password from request");
         }
 
         UsernamePasswordAuthenticationToken user = new UsernamePasswordAuthenticationToken(

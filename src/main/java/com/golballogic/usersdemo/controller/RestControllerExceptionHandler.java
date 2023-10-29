@@ -1,6 +1,7 @@
 package com.golballogic.usersdemo.controller;
 
 import com.golballogic.usersdemo.dto.response.ErrorResponseDto;
+import com.golballogic.usersdemo.exception.AuthenticationException;
 import com.golballogic.usersdemo.exception.UserCreationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,12 @@ public class RestControllerExceptionHandler {
     protected ResponseEntity<?> handleException(UserCreationException ex, WebRequest request) {
         ErrorResponseDto responseDto = buildResponseBody(ex, 1);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseDto);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    protected ResponseEntity<?> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
+        ErrorResponseDto responseDto = buildResponseBody(ex, 2);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseDto);
     }
 
     private ErrorResponseDto buildResponseBody(Exception e, Integer code) {

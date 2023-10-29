@@ -1,6 +1,5 @@
 package com.golballogic.usersdemo.dto;
 
-import com.golballogic.usersdemo.domain.Phone;
 import lombok.*;
 
 @Getter

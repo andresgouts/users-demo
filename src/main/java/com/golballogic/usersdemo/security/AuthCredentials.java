@@ -1,8 +1,12 @@
 package com.golballogic.usersdemo.security;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class AuthCredentials {
 
     private String email;

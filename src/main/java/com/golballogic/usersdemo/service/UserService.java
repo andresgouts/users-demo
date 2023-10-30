@@ -4,9 +4,11 @@ import com.golballogic.usersdemo.domain.User;
 import com.golballogic.usersdemo.dto.UserDto;
 import com.golballogic.usersdemo.dto.request.CreateUserRequest;
 import com.golballogic.usersdemo.dto.response.UserCreationResponse;
+import com.golballogic.usersdemo.exception.AuthenticationException;
 import com.golballogic.usersdemo.exception.UserCreationException;
 import com.golballogic.usersdemo.repository.PhoneRepository;
 import com.golballogic.usersdemo.repository.UserRepository;
+import com.golballogic.usersdemo.security.AuthCredentials;
 import com.golballogic.usersdemo.security.TokenUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +23,12 @@ import java.util.regex.Pattern;
 
 @Service
 public class UserService {
+
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
     private static final String PASSWORD_REGEX = "^(?=(?:[^A-Z]*[A-Z]){1})(?=(?:[^0-9]*[0-9]){2})[A-Za-z0-9]{8,12}$";
 
     private final UserRepository userRepository;
     private final PhoneRepository phoneRepository;
-    private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
 
     @Autowired
@@ -36,7 +38,6 @@ public class UserService {
                        ModelMapper modelMapper) {
         this.userRepository = userRepository;
         this.phoneRepository = phoneRepository;
-        this.passwordEncoder = passwordEncoder;
         this.modelMapper = modelMapper;
     }
 
@@ -44,7 +45,7 @@ public class UserService {
         validateUserCreationData(userRequest);
 
         User user = modelMapper.map(userRequest, User.class);
-        user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+        user.setPassword(user.getPassword());
         user.setIsActive(true);
 
 
@@ -76,10 +77,18 @@ public class UserService {
         }
     }
 
-    public UserDto login(String email) {
+    public UserDto login(String email, AuthCredentials credentials) {
         User user =  userRepository
                 .findOneUserByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if (user.getEmail().equals(credentials.getEmail())) {
+            if (!user.getPassword().equals(credentials.getPassword())) {
+                throw new AuthenticationException("Invalid Password");
+            }
+        } else {
+            throw new AuthenticationException("user does not match with token data");
+        }
 
         user.setLastLogin(Date.from(Instant.now()));
 
@@ -96,7 +105,7 @@ public class UserService {
 
         if(!matcher.matches()) {
             throw new UserCreationException("Email address is invalid");
-        };
+        }
     }
 
     private void validatePasswordFormat(String password) {

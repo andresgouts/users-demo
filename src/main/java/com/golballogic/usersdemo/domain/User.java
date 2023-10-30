@@ -1,5 +1,6 @@
 package com.golballogic.usersdemo.domain;
 
+import com.golballogic.usersdemo.security.EncryptConverter;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -21,6 +22,7 @@ public class User {
     private String name;
     @Column(unique = true)
     private String email;
+    @Convert(converter = EncryptConverter.class)
     private String password;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Phone> phones;

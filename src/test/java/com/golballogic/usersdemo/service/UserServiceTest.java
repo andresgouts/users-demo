@@ -5,9 +5,11 @@ import com.golballogic.usersdemo.dto.PhoneDTO;
 import com.golballogic.usersdemo.dto.UserDto;
 import com.golballogic.usersdemo.dto.request.CreateUserRequest;
 import com.golballogic.usersdemo.dto.response.UserCreationResponse;
+import com.golballogic.usersdemo.exception.AuthenticationException;
 import com.golballogic.usersdemo.exception.UserCreationException;
 import com.golballogic.usersdemo.repository.PhoneRepository;
 import com.golballogic.usersdemo.repository.UserRepository;
+import com.golballogic.usersdemo.security.AuthCredentials;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -39,8 +41,6 @@ public class UserServiceTest {
     PhoneRepository phoneRepository;
     @Spy
     ModelMapper modelMapper;
-    @Spy
-    PasswordEncoder encoder;
     @InjectMocks
     UserService userService;
 
@@ -108,6 +108,10 @@ public class UserServiceTest {
 
     @Test
     public void loginFindsUser() {
+        AuthCredentials authCredentials = AuthCredentials.builder()
+                .email("test@test.com")
+                .password("Password21")
+                .build();
         PhoneDTO phoneDto = PhoneDTO.builder()
                 .number(123L).build();
         List<PhoneDTO> phones = new ArrayList<>();
@@ -128,17 +132,70 @@ public class UserServiceTest {
         when(userRepository.save(any())).thenReturn(user);
         when(userRepository.findOneUserByEmail(userDto.getEmail())).thenReturn(Optional.of(user));
 
-        UserDto response = userService.login(userDto.getEmail());
+        UserDto response = userService.login(userDto.getEmail(), authCredentials);
 
         assertEquals(response.getEmail(), userDto.getEmail());
         assertNotNull(response.getToken());
     }
 
-    @Test(expected = UsernameNotFoundException.class)
-    public void loginDoesNotFindsUser() {
+    @Test(expected = AuthenticationException.class)
+    public void loginBadPassword() {
+        AuthCredentials authCredentials = AuthCredentials.builder()
+                .email("test@test.com")
+                .password("Password22")
+                .build();
         PhoneDTO phoneDto = PhoneDTO.builder()
                 .number(123L).build();
+        List<PhoneDTO> phones = new ArrayList<>();
+        phones.add(phoneDto);
 
+
+        UserDto userDto = UserDto
+                .builder()
+                .email("test@test.com")
+                .password("Password21")
+                .phones(phones)
+                .created(Date.from(Instant.now()))
+                .name("name")
+                .lastLogin(Date.from(Instant.now()))
+                .build();
+        User user = modelMapper.map(userDto, User.class);
+
+        when(userRepository.findOneUserByEmail(userDto.getEmail())).thenReturn(Optional.of(user));
+
+        userService.login(userDto.getEmail(), authCredentials);
+    }
+
+    @Test(expected = AuthenticationException.class)
+    public void loginBadEmail() {
+        AuthCredentials authCredentials = AuthCredentials.builder()
+                .email("test1@test.com")
+                .password("Password21")
+                .build();
+        PhoneDTO phoneDto = PhoneDTO.builder()
+                .number(123L).build();
+        List<PhoneDTO> phones = new ArrayList<>();
+        phones.add(phoneDto);
+
+
+        UserDto userDto = UserDto
+                .builder()
+                .email("test@test.com")
+                .password("Password21")
+                .phones(phones)
+                .created(Date.from(Instant.now()))
+                .name("name")
+                .lastLogin(Date.from(Instant.now()))
+                .build();
+        User user = modelMapper.map(userDto, User.class);
+
+        when(userRepository.findOneUserByEmail(userDto.getEmail())).thenReturn(Optional.of(user));
+
+        userService.login(userDto.getEmail(), authCredentials);
+    }
+
+    @Test(expected = UsernameNotFoundException.class)
+    public void loginDoesNotFindsUser() {
         UserDto userDto = UserDto
                 .builder()
                 .email("test@test.com")
@@ -147,11 +204,10 @@ public class UserServiceTest {
                 .name("name")
                 .lastLogin(Date.from(Instant.now()))
                 .build();
-        User user = modelMapper.map(userDto, User.class);
 
         when(userRepository.findOneUserByEmail(userDto.getEmail())).thenReturn(Optional.empty());
 
-        userService.login(userDto.getEmail());
+        userService.login(userDto.getEmail(), new AuthCredentials());
     }
 
 }

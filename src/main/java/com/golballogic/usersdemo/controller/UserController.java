@@ -2,6 +2,7 @@ package com.golballogic.usersdemo.controller;
 
 import com.golballogic.usersdemo.dto.request.CreateUserRequest;
 import com.golballogic.usersdemo.dto.response.UserCreationResponse;
+import com.golballogic.usersdemo.security.AuthCredentials;
 import com.golballogic.usersdemo.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,8 +23,8 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
-    @GetMapping(value = "/login", produces = "application/json")
-    public ResponseEntity<?> login(Principal principal) {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.login(principal.getName()));
+    @PostMapping(value = "/login", produces = "application/json")
+    public ResponseEntity<?> login(Principal principal, @RequestBody AuthCredentials credentials) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.login(principal.getName(), credentials));
     }
 }

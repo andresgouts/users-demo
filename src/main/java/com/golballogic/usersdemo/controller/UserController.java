@@ -3,7 +3,7 @@ package com.golballogic.usersdemo.controller;
 import com.golballogic.usersdemo.dto.request.CreateUserRequest;
 import com.golballogic.usersdemo.dto.response.UserCreationResponse;
 import com.golballogic.usersdemo.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +12,9 @@ import java.security.Principal;
 
 @RestController()
 @RequestMapping("api/v1/users")
+@AllArgsConstructor
 public class UserController {
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @PostMapping(produces = "application/json")
     public ResponseEntity<?> saveUser(@RequestBody CreateUserRequest userRequest) {

@@ -48,13 +48,7 @@ public class WebSecurityConfig {
     public AuthenticationManager authManager(HttpSecurity http) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class)
                 .userDetailsService(userDetailsService)
-                .passwordEncoder(encoder())
                 .and()
                 .build();
-    }
-
-    @Bean
-    public PasswordEncoder encoder() {
-        return new BCryptPasswordEncoder();
     }
 }

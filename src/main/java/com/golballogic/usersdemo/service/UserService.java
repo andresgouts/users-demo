@@ -6,17 +6,20 @@ import com.golballogic.usersdemo.dto.request.CreateUserRequest;
 import com.golballogic.usersdemo.dto.response.UserCreationResponse;
 import com.golballogic.usersdemo.exception.AuthenticationException;
 import com.golballogic.usersdemo.exception.UserCreationException;
+import com.golballogic.usersdemo.exception.UserNotFoundException;
 import com.golballogic.usersdemo.repository.PhoneRepository;
 import com.golballogic.usersdemo.repository.UserRepository;
 import com.golballogic.usersdemo.security.AuthCredentials;
 import com.golballogic.usersdemo.security.TokenUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -95,6 +98,12 @@ public class UserService {
         UserDto userDto = modelMapper.map(user, UserDto.class);
         userDto.setToken("Bearer "  + TokenUtils.createToken(user.getName(), user.getEmail()));
         return userDto;
+    }
+
+    @Cacheable("getUserById")
+    public UserDto getUserById(UUID id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+        return modelMapper.map(user, UserDto.class);
     }
     
     private void validateEmail(String emailAddress) {

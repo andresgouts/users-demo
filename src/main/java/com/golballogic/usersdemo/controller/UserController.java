@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.UUID;
 
 @RestController()
 @RequestMapping("api/v1/users")
@@ -26,5 +27,10 @@ public class UserController {
     @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<?> login(Principal principal, @RequestBody AuthCredentials credentials) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.login(principal.getName(), credentials));
+    }
+
+    @GetMapping(value="/{id}", produces = "application/json")
+    public ResponseEntity<?> getById(@PathVariable UUID id) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getUserById(id));
     }
 }

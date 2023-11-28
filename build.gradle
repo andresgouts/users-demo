@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '2.7.17'
 	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+	id 'groovy'
 }
 
 group = 'com.golballogic'
@@ -42,6 +43,10 @@ dependencies {
 	testImplementation 'io.cucumber:cucumber-java:7.13.0'
 	testImplementation 'io.cucumber:cucumber-junit:7.13.0'
 	testImplementation 'io.cucumber:cucumber-spring:7.13.0'
+
+	testImplementation 'org.codehaus.groovy:groovy-all:2.5.22'
+	testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+	testImplementation 'org.spockframework:spock-spring:2.3-groovy-3.0'
 
 }
 
